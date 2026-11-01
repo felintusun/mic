@@ -1,0 +1,19 @@
+// Deno lints and formats the project's JavaScript: the site's invite page (site/) here, the box's
+// viewer page as a member with a style of its own (testbox/view/web/deno.json). Nothing runs on
+// Deno: the site's tests run under Node (`node --test`), as in CI. `just js` runs both checks.
+{
+  "workspace": ["./testbox/view/web"],
+  "lint": {
+    "include": ["site/"],
+    "rules": {
+      // Both pages are browser code, where `window` is the global; the rule is for Deno programs.
+      "exclude": ["no-window"]
+    }
+  },
+  "fmt": {
+    // The pages' HTML and CSS are kept by hand; only the scripts are held to a format.
+    "include": ["site/**/*.js", "site/**/*.mjs"],
+    "indentWidth": 4,
+    "lineWidth": 100
+  }
+}
