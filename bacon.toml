@@ -1,0 +1,46 @@
+# bacon's jobs for mic: `bacon` checks the workspace as files change; in it, `c` is clippy as CI
+# runs it, `t` the tests, `k` mic-core's alone, `r` the window. bacon's own jobs are still there
+# (`bacon --list-jobs`). The box's display tooling, testbox/view, is a workspace of its own.
+
+default_job = "check"
+env.CARGO_TERM_COLOR = "always"
+
+# The window's markup is compiled by mic-slint's build.rs, which bacon doesn't know reads it.
+watch = ["crates/mic-slint/ui"]
+
+# Every crate and target, every feature: the window's harness too.
+[jobs.check]
+command = ["cargo", "check", "--workspace", "--all-targets", "--all-features"]
+need_stdout = false
+
+# As CI's check job: a warning fails.
+[jobs.clippy]
+command = [
+    "cargo", "clippy", "--workspace", "--all-targets", "--all-features",
+    "--", "-D", "warnings",
+]
+need_stdout = false
+
+[jobs.test]
+command = ["cargo", "test", "--workspace", "--all-features"]
+need_stdout = true
+
+# The core's tests alone: the protocol, the crypto and the room, without the window's build.
+[jobs.core]
+command = ["cargo", "test", "-p", "mic-core"]
+need_stdout = true
+
+[jobs.doc]
+command = ["cargo", "doc", "--workspace", "--no-deps"]
+need_stdout = false
+
+# The window, restarted on each change: the relay from MIC_RELAY, or `bacon run -- --relay <url>`.
+[jobs.run]
+command = ["cargo", "run", "-p", "mic-slint"]
+need_stdout = true
+allow_warnings = true
+background = false
+on_change_strategy = "kill_then_restart"
+
+[keybindings]
+k = "job:core"

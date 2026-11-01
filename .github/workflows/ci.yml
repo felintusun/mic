@@ -122,7 +122,9 @@ jobs:
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
 
-  # The site's invite page logic (site/invite.js), under node's test runner.
+  # The site's invite page logic (site/invite.js), under node's test runner; the project's
+  # JavaScript, the site's and the box's viewer page, linted and its format checked by Deno
+  # (deno.jsonc).
   site:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -132,6 +134,12 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
+      # Pinned by commit; the SHA was read from GitHub's API (2026-10-31).
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        with:
+          deno-version: 2.9.8
+      - run: deno lint
+      - run: deno fmt --check
       # The test files named: a directory is taken for a module by the runners' Node.
       - run: node --test site/*.test.mjs
       - run: site/build.sh _site && test -s _site/version.json
